@@ -41,5 +41,7 @@ start(void)
 
 	// Yield forever.
 	while (1)
-		sys_yield(); // TODO: Change this to exit for Exercise 2.
+		sys_exit(0); // TODO: Exercise 2. Exit so don't yield forever. sys_exit needs an arg (int status)
+
+	sys_priority(100);
 }

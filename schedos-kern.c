@@ -52,10 +52,10 @@ int scheduling_algorithm;
 // UNCOMMENT THESE LINES IF YOU DO EXERCISE 4.A
 // Use these #defines to initialize your implementation.
 // Changing one of these lines should change the initialization.
-// #define __PRIORITY_1__ 1
-// #define __PRIORITY_2__ 2
-// #define __PRIORITY_3__ 3
-// #define __PRIORITY_4__ 4
+#define __PRIORITY_1__ 1
+#define __PRIORITY_2__ 2
+#define __PRIORITY_3__ 3
+#define __PRIORITY_4__ 4
 
 // UNCOMMENT THESE LINES IF YOU DO EXERCISE 4.B
 // Use these #defines to initialize your implementation.
@@ -67,9 +67,9 @@ int scheduling_algorithm;
 
 // USE THESE VALUES FOR SETTING THE scheduling_algorithm VARIABLE.
 #define __EXERCISE_1__   0  // the initial algorithm
-#define __EXERCISE_2__   2  // strict priority scheduling (exercise 2)
-#define __EXERCISE_4A__ 41  // p_priority algorithm (exercise 4.a)
-#define __EXERCISE_4B__ 42  // p_share algorithm (exercise 4.b)
+#define __EXERCISE_2__   1  // strict priority scheduling (exercise 2)
+#define __EXERCISE_4A__  2  // p_priority algorithm (exercise 4.a)
+#define __EXERCISE_4B__  3  // p_share algorithm (exercise 4.b)
 #define __EXERCISE_7__   7  // any algorithm for exercise 7
 
 
@@ -96,6 +96,7 @@ start(void)
 	for (i = 0; i < NPROCS; i++) {
 		proc_array[i].p_pid = i;
 		proc_array[i].p_state = P_EMPTY;
+		proc_array[i].p_priority = i;
 	}
 
 	// Set up process descriptors (the proc_array[])
@@ -127,7 +128,7 @@ start(void)
 	//   41 = p_priority algorithm (exercise 4.a)
 	//   42 = p_share algorithm (exercise 4.b)
 	//    7 = any algorithm that you may implement for exercise 7
-	scheduling_algorithm = 0;
+	scheduling_algorithm = 1;
 
 	// Switch to the first process.
 	run(&proc_array[1]);
@@ -187,8 +188,8 @@ interrupt(registers_t *reg)
 		run(current);
 
 	case INT_SYS_PRIORITY:
-		// Exercise 4A
-		current->p_priority = reg->reg_eax;
+		// Exercise 4A: set priority level
+		current->p_priority = reg->reg_eax; // priority = pid where smallest pid = highest priority
 		run(current);
 		// TODO: if they have same priority level, must alternate among them
 
@@ -246,6 +247,26 @@ schedule(void)
 			}
 		}
 	}
+	// Exercise 4A
+	else if (scheduling_algorithm == 2) { 
+		int k;
+		int min_priority = proc_array[1].p_priority;
+		int min_index = 0;
+		while (1) {
+			for (k = 1; k < NPROCS; k++) {
+				if (proc_array[k].p_priority < min_priority) {
+					min_priority = proc_array[k].p_priority;
+					min_index = k;
+				}
+				// if (proc_array[k].p_priority == min_priority) {
+
+				// }
+			}
+			run(&proc_array[k]);
+		}
+	}
+
+
 
 	// If we get here, we are running an unknown scheduling algorithm.
 	cursorpos = console_printf(cursorpos, 0x100, "\nUnknown scheduling algorithm %d\n", scheduling_algorithm);
