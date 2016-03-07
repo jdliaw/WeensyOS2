@@ -17,6 +17,7 @@
 #define INT_SYS_USER1		50
 #define INT_SYS_USER2		51
 #define INT_SYS_PRIORITY	52 // Exercise 4A
+#define INT_SYS_PRINT		53 // Exercise 6
 
 
 // The current screen cursor position (stored at memory location 0x198000).

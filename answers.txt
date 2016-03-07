@@ -29,6 +29,11 @@ Did you complete Exercise 4A, Exercise 4B, or both for extra credit? Exercise 4A
 
 Exercise 5:
 
+First known timer interrupt occurs in Process 1. The first anomaly is found in the first line 
+where one of the Process 1 characters is missing. This indicates that a clock interrupt happened 
+during the execution of Process 1, in which the CPU will stop running the process and transfer 
+control to the kernel.
+
 
 (Exercise 6 is a coding exercise)
 

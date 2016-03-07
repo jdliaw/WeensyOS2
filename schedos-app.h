@@ -88,3 +88,22 @@ sys_priority(int priority)
  *   IF YOU IMPLEMENT EXERCISE 4.B, NAME YOUR SYSTEM CALL sys_share .
  *
  *****************************************************************************/
+
+
+ /*****************************************************************************
+ * sys_print
+ *
+ *   Exercise 6.
+ *
+ *****************************************************************************/
+
+static inline void
+sys_print(int print)
+{
+	asm volatile("int %0\n"
+				: : "i" (INT_SYS_PRINT),
+					"a" (print)
+				: "cc", "memory");
+}
+
+

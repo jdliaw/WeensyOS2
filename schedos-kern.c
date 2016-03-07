@@ -88,7 +88,7 @@ start(void)
 
 	// Set up hardware (schedos-x86.c)
 	segments_init();
-	interrupt_controller_init(0);
+	interrupt_controller_init(1); // Exercise 5
 	console_clear();
 
 	// Initialize process descriptors as empty
@@ -132,7 +132,7 @@ start(void)
 	//   41 = p_priority algorithm (exercise 4.a)
 	//   42 = p_share algorithm (exercise 4.b)
 	//    7 = any algorithm that you may implement for exercise 7
-	scheduling_algorithm = 2;
+	scheduling_algorithm = 0;
 
 	// Switch to the first process.
 	run(&proc_array[1]);
@@ -197,6 +197,10 @@ interrupt(registers_t *reg)
 		run(current);
 		// TODO: if they have same priority level, must alternate among them
 
+	case INT_SYS_PRINT:
+		// Exercise 6: Synchronization
+		*cursorpos++ = reg->reg_eax;
+
 	case INT_CLOCK:
 		// A clock interrupt occurred (so an application exhausted its
 		// time quantum).
@@ -255,18 +259,9 @@ schedule(void)
 	else if (scheduling_algorithm == 2) { 
 		int cur_priority = 1;
 		int cur_proc = pid;
-		//int k;
 		while (1) {
-			while (cur_priority <= __PRIORITY_4__) {
-				//for (k = 1; k < NPROCS; k++) {
+			while (cur_priority <= __PRIORITY_4__) { // change this to just 4
 					cur_proc = (cur_proc + 1) % NPROCS;
-					/*if (proc_array[cur_proc].p_state == P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
-						run(&proc_array[cur_proc]);
-					}
-					else if (proc_array[cur_proc].p_state != P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
-						cur_priority++;
-						cur_proc = 0;
-					}*/
 					for (; cur_proc != pid; cur_proc = (cur_proc + 1) % NPROCS) {
 						if (proc_array[cur_proc].p_state == P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
 							run(&proc_array[cur_proc]);
@@ -276,8 +271,6 @@ schedule(void)
 							run(&proc_array[cur_proc]);
 					}
 					cur_priority++;
-
-				//}
 			}
 		}
 	}
