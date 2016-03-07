@@ -96,7 +96,6 @@ start(void)
 	for (i = 0; i < NPROCS; i++) {
 		proc_array[i].p_pid = i;
 		proc_array[i].p_state = P_EMPTY;
-		proc_array[i].p_priority = i;
 	}
 
 	// Set up process descriptors (the proc_array[])
@@ -115,6 +114,11 @@ start(void)
 
 		// Mark the process as runnable!
 		proc->p_state = P_RUNNABLE;
+
+		// Exercise 4A: Set default priority
+		proc->p_priority = __PRIORITY_1__; // use priority 1 to set the priority of process 1
+		// can use switch, or an array priority[5]
+		// then set p_priority = priority[i];
 	}
 
 	// Initialize the cursor-position shared variable to point to the
@@ -128,7 +132,7 @@ start(void)
 	//   41 = p_priority algorithm (exercise 4.a)
 	//   42 = p_share algorithm (exercise 4.b)
 	//    7 = any algorithm that you may implement for exercise 7
-	scheduling_algorithm = 1;
+	scheduling_algorithm = 2;
 
 	// Switch to the first process.
 	run(&proc_array[1]);
@@ -249,20 +253,32 @@ schedule(void)
 	}
 	// Exercise 4A
 	else if (scheduling_algorithm == 2) { 
-		int k;
-		int min_priority = proc_array[1].p_priority;
-		int min_index = 0;
+		int cur_priority = 1;
+		int cur_proc = pid;
+		//int k;
 		while (1) {
-			for (k = 1; k < NPROCS; k++) {
-				if (proc_array[k].p_priority < min_priority) {
-					min_priority = proc_array[k].p_priority;
-					min_index = k;
-				}
-				// if (proc_array[k].p_priority == min_priority) {
+			while (cur_priority <= __PRIORITY_4__) {
+				//for (k = 1; k < NPROCS; k++) {
+					cur_proc = (cur_proc + 1) % NPROCS;
+					/*if (proc_array[cur_proc].p_state == P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
+						run(&proc_array[cur_proc]);
+					}
+					else if (proc_array[cur_proc].p_state != P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
+						cur_priority++;
+						cur_proc = 0;
+					}*/
+					for (; cur_proc != pid; cur_proc = (cur_proc + 1) % NPROCS) {
+						if (proc_array[cur_proc].p_state == P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
+							run(&proc_array[cur_proc]);
+						}
+					}
+					if (proc_array[cur_proc].p_state == P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
+							run(&proc_array[cur_proc]);
+					}
+					cur_priority++;
 
-				// }
+				//}
 			}
-			run(&proc_array[k]);
 		}
 	}
 

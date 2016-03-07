@@ -18,6 +18,11 @@
 #define PRINTCHAR	('1' | 0x0C00)
 #endif
 
+// set priority for 4A
+#ifndef MYPRIORITY
+#define MYPRIORITY		1
+#endif
+
 // UNCOMMENT THE NEXT LINE TO USE EXERCISE 8 CODE INSTEAD OF EXERCISE 6
 // #define __EXERCISE_8__
 // Use the following structure to choose between them:
@@ -33,6 +38,8 @@ start(void)
 {
 	int i;
 
+	sys_priority(MYPRIORITY);
+
 	for (i = 0; i < RUNCOUNT; i++) {
 		// Write characters to the console, yielding after each one.
 		*cursorpos++ = PRINTCHAR;
@@ -41,7 +48,5 @@ start(void)
 
 	// Yield forever.
 	while (1)
-		sys_exit(0); // TODO: Exercise 2. Exit so don't yield forever. sys_exit needs an arg (int status)
-
-	sys_priority(100);
+		sys_exit(0); // Exercise 2. Exit so don't yield forever. sys_exit needs an arg (int status)
 }
