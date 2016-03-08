@@ -23,6 +23,16 @@
 #define MYPRIORITY		1
 #endif
 
+// set share for 4B
+#ifndef MYSHARE
+#define MYSHARE		2
+#endif
+
+// set tickets for 7
+#ifndef TICKETS
+#define TICKETS 	25
+#endif
+
 // UNCOMMENT THE NEXT LINE TO USE EXERCISE 8 CODE INSTEAD OF EXERCISE 6
 // #define __EXERCISE_8__
 // Use the following structure to choose between them:
@@ -39,6 +49,8 @@ start(void)
 	int i;
 
 	sys_priority(MYPRIORITY);
+	sys_share(MYSHARE);
+	sys_ticket(TICKETS);
 
 	for (i = 0; i < RUNCOUNT; i++) {
 		// Write characters to the console, yielding after each one.

@@ -60,10 +60,10 @@ int scheduling_algorithm;
 // UNCOMMENT THESE LINES IF YOU DO EXERCISE 4.B
 // Use these #defines to initialize your implementation.
 // Changing one of these lines should change the initialization.
-// #define __SHARE_1__ 1
-// #define __SHARE_2__ 2
-// #define __SHARE_3__ 3
-// #define __SHARE_4__ 4
+#define __SHARE_1__ 1
+#define __SHARE_2__ 2
+#define __SHARE_3__ 3
+#define __SHARE_4__ 4
 
 // USE THESE VALUES FOR SETTING THE scheduling_algorithm VARIABLE.
 #define __EXERCISE_1__   0  // the initial algorithm
@@ -88,7 +88,7 @@ start(void)
 
 	// Set up hardware (schedos-x86.c)
 	segments_init();
-	interrupt_controller_init(1); // Exercise 5
+	interrupt_controller_init(0); // Exercise 5
 	console_clear();
 
 	// Initialize process descriptors as empty
@@ -96,6 +96,9 @@ start(void)
 	for (i = 0; i < NPROCS; i++) {
 		proc_array[i].p_pid = i;
 		proc_array[i].p_state = P_EMPTY;
+		proc_array[i].p_share = i; // Exercise 4B: initialize shares to 1
+		proc_array[i].p_nrun = 0;
+		proc_array[i].p_tickets = 1;
 	}
 
 	// Set up process descriptors (the proc_array[])
@@ -128,11 +131,11 @@ start(void)
 	// Initialize the scheduling algorithm.
 	// USE THE FOLLOWING VALUES:
 	//    0 = the initial algorithm
-	//    2 = strict priority scheduling (exercise 2)
-	//   41 = p_priority algorithm (exercise 4.a)
-	//   42 = p_share algorithm (exercise 4.b)
+	//    1 = strict priority scheduling (exercise 2)
+	//    2 = p_priority algorithm (exercise 4.a)
+	//    3 = p_share algorithm (exercise 4.b)
 	//    7 = any algorithm that you may implement for exercise 7
-	scheduling_algorithm = 0;
+	scheduling_algorithm = 7;
 
 	// Switch to the first process.
 	run(&proc_array[1]);
@@ -195,11 +198,24 @@ interrupt(registers_t *reg)
 		// Exercise 4A: set priority level
 		current->p_priority = reg->reg_eax; // priority = pid where smallest pid = highest priority
 		run(current);
-		// TODO: if they have same priority level, must alternate among them
+
+	case INT_SYS_SHARE:
+		// EXERCISE 4B: set share value
+		current->p_share = reg->reg_eax;
+		run(current);
 
 	case INT_SYS_PRINT:
 		// Exercise 6: Synchronization
 		*cursorpos++ = reg->reg_eax;
+
+	case INT_SYS_TICKET:
+		// Exercise 7: Lottery scheduling
+		current->p_tickets = reg->reg_eax;
+		run(current);
+
+	case INT_SYS_ACQUIRE:
+
+	case INT_SYS_RELEASE;
 
 	case INT_CLOCK:
 		// A clock interrupt occurred (so an application exhausted its
@@ -261,21 +277,59 @@ schedule(void)
 		int cur_proc = pid;
 		while (1) {
 			while (cur_priority <= __PRIORITY_4__) { // change this to just 4
-					cur_proc = (cur_proc + 1) % NPROCS;
-					for (; cur_proc != pid; cur_proc = (cur_proc + 1) % NPROCS) {
-						if (proc_array[cur_proc].p_state == P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
-							run(&proc_array[cur_proc]);
-						}
-					}
+				cur_proc = (cur_proc + 1) % NPROCS;
+				for (; cur_proc != pid; cur_proc = (cur_proc + 1) % NPROCS) {
 					if (proc_array[cur_proc].p_state == P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
-							run(&proc_array[cur_proc]);
+						run(&proc_array[cur_proc]);
 					}
-					cur_priority++;
+				}
+				if (proc_array[cur_proc].p_state == P_RUNNABLE && proc_array[cur_proc].p_priority == cur_priority) {
+						run(&proc_array[cur_proc]);
+				}
+				cur_priority++;
 			}
 		}
 	}
-
-
+	// Exercise 4B
+	else if (scheduling_algorithm == 3) {
+		while(1) {
+			if (proc_array[pid].p_state == P_RUNNABLE) {
+				if (proc_array[pid].p_nrun < proc_array[pid].p_share) {
+					proc_array[pid].p_nrun++;
+					run(&proc_array[pid]);
+				}
+				else {
+					proc_array[pid].p_nrun = 0;
+				}
+			}
+			pid = (pid + 1) % NPROCS;
+		}
+	}
+	// Exercise 7: Lottery scheduling
+	else if (scheduling_algorithm == 7) {
+		while (1) {
+			// pick a lottery ticket within range 1-100 (randomly, using read_cycle_counter)
+			// find the process that holds this ticket
+			// run that process
+			uint64_t winner = read_cycle_counter();
+			//cursorpos = console_printf(cursorpos, 0x100, "\nWinning ticket %d\n", winner);
+			int tracker = 100; // set to max
+			int k;
+			for (k = 1; k < NPROCS; k++) {
+				if (winner < proc_array[pid].p_tickets) {
+					if (proc_array[pid].p_tickets < tracker) {
+						tracker = proc_array[pid].p_tickets;
+					}
+				}
+				pid = (pid + 1) % NPROCS;
+			}
+			for (k = 1; k < NPROCS; k++) {
+				if (proc_array[pid].p_tickets == tracker && proc_array[pid].p_state == P_RUNNABLE)
+					run(&proc_array[pid]);
+			}
+			// 25 10 50 15
+		}
+	}
 
 	// If we get here, we are running an unknown scheduling algorithm.
 	cursorpos = console_printf(cursorpos, 0x100, "\nUnknown scheduling algorithm %d\n", scheduling_algorithm);

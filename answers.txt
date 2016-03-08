@@ -16,7 +16,7 @@ The name of the scheduling algorithm is: Cooperative scheduling that mimics Roun
 Response to Exercise 3:
 
 Average turnaround time for scheduling_algorithm 0: (320 * 4) - 3 = 1280 - 3 = 1277 ms
-Average turnaround time for scheduling_algorithm 1: 320 mss
+Average turnaround time for scheduling_algorithm 1: 320 ms
 
 Average wait time for scheduling_algorithm 0: 0 ms 
 Average wait time for scheduling_algorithm 1: (0 + (320 - 2) + (640 - 3) + (960 - 4)) / 4 = 477.75 ms

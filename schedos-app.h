@@ -89,6 +89,15 @@ sys_priority(int priority)
  *
  *****************************************************************************/
 
+ static inline void
+ sys_share(int share)
+ {
+	asm volatile("int %0\n"
+		     : : "i" (INT_SYS_SHARE),
+		         "a" (share)
+		     : "cc", "memory");
+}
+
 
  /*****************************************************************************
  * sys_print
@@ -104,6 +113,54 @@ sys_print(int print)
 				: : "i" (INT_SYS_PRINT),
 					"a" (print)
 				: "cc", "memory");
+}
+
+ /*****************************************************************************
+ * sys_ticket
+ *
+ *   Exercise 7.
+ *
+ *****************************************************************************/
+
+static inline void
+sys_ticket(int tickets)
+{
+	asm volatile("int %0\n"
+				: : "i" (INT_SYS_TICKET),
+					"a" (tickets)
+				: "cc", "memory");
+}
+
+ /*****************************************************************************
+ * lock_acquire
+ *
+ *   Exercise 8.
+ *
+ *****************************************************************************/
+
+static inline void
+lock_acquire(void)
+{
+	asm volatile("int %0\n"
+				: : "i" (INT_SYS_ACQUIRE),
+					"a" (tickets)
+				: "cc", "memory"); // fix this stuff
+}
+
+/*****************************************************************************
+ * lock_release
+ *
+ *   Exercise 8.
+ *
+ *****************************************************************************/
+
+static inline void
+lock_release(void)
+{
+	asm volatile("int %0\n"
+				: : "i" (INT_SYS_RELEASE),
+					"a" (tickets)
+				: "cc", "memory"); // fix this stuff
 }
 
 
